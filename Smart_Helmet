@@ -1,0 +1,36 @@
+#include "ThingSpeak.h" #include <ESP8266WiFi.h> #define ON 0
+#define OFF 1
+#define SECRET_CH_ID 0000000 // replace 0000000 with your channel number
+#define SECRET_WRITE_APIKEY "XYZ" // replace XYZ with your channel write API Key
+
+
+unsigned long myChannelNumber = SECRET_CH_ID;
+const char * myWriteAPIKey = SECRET_WRITE_APIKEY; const char *ssid = "AndroidAP"; // Enter your WiFi Name const char *pass = "12345668"; // Enter your WiFi Password int vibration_Sensor = D4;
+int LED = D0;
+int present_condition = 0; int previous_condition = 0; WiFiClient client;
+void setup() { Serial.begin(115200); delay(100);
+pinMode(vibration_Sensor, INPUT); pinMode(LED, OUTPUT); Serial.println("Connecting to "); Serial.println(ssid);
+WiFi.begin(ssid, pass);
+while (WiFi.status() != WL_CONNECTED)
+{
+delay(500);
+Serial.print("."); // print "	" till the WIFI not connected
+}
+Serial.println(""); Serial.println("WiFi connected"); ThingSpeak.begin(client);
+
+}
+void loop() 
+{
+previous_condition = present_condition;
+present_condition = digitalRead(D4); // Reading digital data from the D4 Pin of the NodeMCU ESP8266.
+// Write value to Field 1 of a ThingSpeak Channel
+int httpCode = ThingSpeak.writeField(myChannelNumber, 1, present_condition, myWriteAPIKey); if (previous_condition != present_condition) {
+led_blink(); Serial.println("Accident Detected");
+} else { digitalWrite(LED, OFF);
+}
+}
+void led_blink(void) 
+{ digitalWrite(LED, ON); delay(250); digitalWrite(LED, OFF); delay(250); digitalWrite(LED, ON); delay(250); digitalWrite(LED, OFF); delay(250);
+}
+
+
